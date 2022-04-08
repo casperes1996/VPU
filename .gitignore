@@ -9,6 +9,7 @@ out
 out/*
 out/*/*
 out/*/*/*
+out/assembler/Target/vpu-bin-as
 
 
 # macOS DS_Store
