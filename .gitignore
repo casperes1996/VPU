@@ -1,6 +1,9 @@
 # Prerequisites
 *.d
 
+# .vscode dir
+.vscode
+
 # Don't include outdir
 
 ./out/*
