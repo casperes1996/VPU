@@ -7,7 +7,8 @@
 # Don't include outdir
 out
 out/*
-out/**
+out/*/*
+out/*/*/*
 
 
 # macOS DS_Store
