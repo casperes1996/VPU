@@ -1,0 +1,6 @@
+.section TEXT
+main:
+MOVE $5 r0
+MOVE $10 r1
+PLUS r1 r0
+NOOP

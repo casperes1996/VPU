@@ -52,3 +52,5 @@ BORR    (r)     (r)     N/A         14 r  r  00                 Bitwise OR of tw
 BORR    $c      (r)     N/A         15 c  r  00                 Bitwise OR of a constant and a register, result saved in ARG2
 BNOT    (r)     N/A     N/A         16 r  r  00                 Negate the value in ARG1 (all bits negated) and store the result in ARG1
 NOOP    N/A     N/A     N/A         ff 00 00 00                 The no-op. Moves PC to the next instruction doing nothing else
+
+## If new instructions are added, remember to update VALID_INSTRUCTIONS in vpu-bin-as.h, assembler code generation and emulator runtime
