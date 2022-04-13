@@ -34,6 +34,13 @@ int main(int argc, char** argv) {
     printInstructions(tokens); // debug only
     normaliseInstructionList(tokens);
     printInstructions(tokens); // debug only
+    uint64_t bytesWritten = 0;
+    uint8_t* binaryInstructionStream = createBinaryInstructionStream(tokens, &bytesWritten);
+    // argv[1] file with .bin extension
+    char* fileName = malloc(strlen(argv[1]) + 5);
+    strcpy(fileName, argv[1]);
+    strcat(fileName, ".bin");
+    writeBinaryStreamToFile(binaryInstructionStream, bytesWritten, fileName);
     free(fileData.data);
     return 0;
 }
@@ -154,24 +161,117 @@ bool isValidInstruction(Instruction* instruction) {
 }
 
 
-uint8_t* createBinaryInstructionStream(DynamicArray_InstructionPtr* instructions) {
+void writeOperandsToBinaryStream(uint8_t* binaryStream,uint64_t* offsetRet, Instruction* instruction) {
+    uint64_t offset = *offsetRet;
+    if(instruction->operand1 != NULL) {
+        if(instruction->operand1[0] == '$') { // A constant value moved to a register
+            binaryStream[offset] = (uint8_t) strtol(instruction->operand1+1, NULL, 0); // Gets the value of the constant. With base 0 either base 10, hex or octal can work depending on input form
+        } else { // A register argment
+            binaryStream[offset] = getValidRegisterNumber(instruction->operand1);
+        }
+    } else { // NULL
+        binaryStream[offset] = 0x00;
+    }
+    offset += 1;
+    if(instruction->operand2 != NULL) {
+        if(instruction->operand2[0] == '$') { // A constant value moved to a register
+            binaryStream[offset] = (uint8_t) strtol(instruction->operand2+1, NULL, 0); // Gets the value of the constant. With base 0 either base 10, hex or octal can work depending on input form
+        } else { // A register argment
+            binaryStream[offset] = getValidRegisterNumber(instruction->operand2);
+        }
+    } else { // NULL
+        binaryStream[offset] = 0x00;
+    }
+    offset += 1;
+    if(instruction->operand3 != NULL) {
+        if(instruction->operand3[0] == '$') { // A constant value moved to a register
+            binaryStream[offset] = (uint8_t) strtol(instruction->operand3+1, NULL, 0); // Gets the value of the constant. With base 0 either base 10, hex or octal can work depending on input form
+        } else { // A register argment
+            binaryStream[offset] = getValidRegisterNumber(instruction->operand3);
+        }
+    } else { // NULL
+        binaryStream[offset] = 0x00;
+    }
+    offset += 1;
+    *offsetRet = offset;
+}
+
+
+// bytesWritten will be = numberOfBytes in the returned array of bytes
+uint8_t* createBinaryInstructionStream(DynamicArray_InstructionPtr* instructions, uint64_t* bytesWritten) {
     uint8_t* binaryInstructionStream = calloc(INSTRUCTION_BYTE_WIDTH*instructions->used, sizeof(uint8_t)); // Amount of instructions times the width of each instruction in bytes
     uint64_t numberOfBytes = 0;
     DynamicArray_LabelPtr* labels = initArray_LabelPtr(8); // Start with just enough space for 8 labels - We will use the labels list to not have to go through all instructions again when resolving a JUMP
-    for(size_t i = 0; i < instructions->used; i++) {
+    for(size_t i = 0; i < instructions->used; i++) { // Instruction parsing loop.
         char* opName = instructions->array[i]->opName; // The primary determining factor for encoding instruction.
+
         if(strcasecmp(opName, "ACMD") == 0) {
             // Assembler command. Not used in v1.0
             fprintf(stderr, "Error: Assembler command encountered. This is not supported in v1.0\n");
-            exit(4);
-        } else if(strcasecmp(opName, "LABL") == 0) {
+            continue;
+        } 
+        else if(strcasecmp(opName, "LABL") == 0) { // Add to our list of labels for future lookups
             Label* label = calloc(1, sizeof(Label));
             label->name = strdup(instructions->array[i]->operand1);
             label->address = numberOfBytes; // offset from the start of the program
             insertArray_LabelPtr(labels, label);
+            continue;
         }
-    }
+        else if(strcasecmp(opName, "MOVE") == 0) { // Move instructions - figure out if constant or register type
+            if(instructions->array[i]->operand1[0] == '$') { // A constant value moved to a register
+                binaryInstructionStream[numberOfBytes] = 0x01; // Set the opcode to MOVE with Constant
+            } else { // Register to Register
+                binaryInstructionStream[numberOfBytes] = 0x00; // Set the opcode to MOVE with Register
+            }
+        }
+        else if(strcasecmp(opName, "PLUS") == 0) { // Add instructions - figure out if constant or register type
+            if(instructions->array[i]->operand1[0] == '$') { // A constant value added to a register
+                binaryInstructionStream[numberOfBytes] = 0x08; // Set the opcode to PLUS with Constant
+            } else {
+                binaryInstructionStream[numberOfBytes] = 0x07;
+            }
+        }
+        else if(strcasecmp(opName, "SUBT") == 0) { // Subtract instructions - figure out if constant or register type
+            if(instructions->array[i]->operand1[0] == '$') { // A constant value subtracted from a register
+                binaryInstructionStream[numberOfBytes] = 0x0e;
+            } else {
+                binaryInstructionStream[numberOfBytes] = 0x0d;
+            }
+        }
+        else if(strcasecmp(opName, "MULT") == 0) { // Multiply instructions - figure out if constant or register type
+            if(instructions->array[i]->operand1[0] == '$') { // A constant value multiplied by a register
+                binaryInstructionStream[numberOfBytes] = 0x0a; // Set the opcode to MULT with Constant
+            } else {
+                binaryInstructionStream[numberOfBytes] = 0x09;
+            }
+        }
+        else if(strcasecmp(opName, "NOOP") == 0) {
+            binaryInstructionStream[numberOfBytes] = 0xff;
+        } 
+        else {
+            fprintf(stderr, "Encountered unrecognised instructions: %s\n", opName);
+            exit(-1);
+        } // Done finding opCode
+
+        numberOfBytes += 1;
+
+        // MARK: - From here we only set operands. Same code can be used for all instructions.
+        writeOperandsToBinaryStream(binaryInstructionStream, &numberOfBytes, instructions->array[i]);
+    } // end of for loop
+
+    *bytesWritten = numberOfBytes;
     return binaryInstructionStream;
+}
+
+
+void writeBinaryStreamToFile(uint8_t* binaryStream, uint64_t numberOfBytes, char* fileName) {
+    FILE* file = fopen(fileName, "wb");
+    if(file == NULL) {
+        fprintf(stderr, "Error: Could not open file %s for writing\n", fileName);
+        exit(-1);
+    }
+    fwrite(binaryStream, sizeof(uint8_t), numberOfBytes, file);
+    fclose(file);
 }
 
 
