@@ -6,4 +6,6 @@ Still needing to be done:
 • Build the emulator (all missing. Subdivide tasks when starting)
 • Make a program that automatically runs assembles all the files in valid and invalid folders and reports if the correct ones succeeded and failed.
 • Add extra features like a stack after v1.0 is implemented both in assembler and emulator. Introduce skeleton support in v1.0 only.
-• Ongoing: Clean up code. Evaluate if things need to be moved to shared libraries/object files/headers. 
+• Ongoing: Clean up code. Evaluate if things need to be moved to shared
+• Add more error handling and memory cleanup in assembler
+• Write further documentation for individual components and directories
