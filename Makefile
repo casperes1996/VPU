@@ -23,4 +23,5 @@ ${OUTDIR}/emulator/Target/vpu-emu: ${OUTDIR}/emulator/%.o
 clean: 
 	@rm -rf ${OUTDIR}/assembler
 	@rm -rf ${OUTDIR}/emulator
+	@rm asm-examples/valid/*.bin
 	@echo "Cleaned up!"

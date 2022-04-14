@@ -9,3 +9,4 @@ Still needing to be done:
 • Ongoing: Clean up code. Evaluate if things need to be moved to shared
 • Add more error handling and memory cleanup in assembler
 • Write further documentation for individual components and directories
+• Allow assembler to take extra flags to specify things like output file

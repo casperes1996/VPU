@@ -221,8 +221,14 @@ DynamicArray_uint8_t* createBinaryInstructionStream(DynamicArray_InstructionPtr*
             }
         }
         else if(strcasecmp(opName, "JUMP") == 0) {
-            // MARK:- JUMP is a noteworthy exception to normal flow when using a label, Thus using continue.
-            // TODO:- Encode all instructions required to move the label address to the specified register and perform the jump
+            Label* potentialLabel = findLabelIfExistsForJump(instructions->array[i], labels);
+            
+            if(potentialLabel != NULL) {
+                // This wil insert instructions such that the label address is placed in the second operand register. After this the form should be a normal JUMP.
+                rewriteLabelJump(binaryInstructionStream, getValidRegisterNumber(instructions->array[i]->operand2), potentialLabel);
+                instructions->array[i]->operand3 = NULL; // We don't need to store the label name in the instruction anymore
+            }
+            insertArray_uint8_t(binaryInstructionStream, JUMP_OPCODE);
         }
         else if(strcasecmp(opName, "PLUS") == 0) { // Add instructions - figure out if constant or register type
             if(instructions->array[i]->operand1[0] == '$') { // A constant value added to a register
@@ -261,8 +267,46 @@ DynamicArray_uint8_t* createBinaryInstructionStream(DynamicArray_InstructionPtr*
 }
 
 
-void rewriteLabelJump(DynamicArray_uint8_t* binaryStream, uint8_t reg, Label* label) {
+Label* findLabelIfExistsForJump(Instruction* instruction, DynamicArray_LabelPtr* labels) {
+    if(instruction->operand3 != NULL) { // WE HAVE A LABEL. Use shorthand (see docs/ISA.md)
+        // Find the label in our list of labels
+        Label* label = NULL;
+        for(size_t j = 0; j < labels->used; j++) {
+            if(strcasecmp(labels->array[j]->name, instruction->operand3) == 0) {
+                label = labels->array[j];
+                break;
+            }
+        }
+        if(label == NULL) {
+            fprintf(stderr, "Error: Label %s not found\n", instruction->operand3);
+            exit(4);
+        }
+        return label;
+    }
+    return NULL;
+}
 
+
+#define byteMask 0xFF
+void rewriteLabelJump(DynamicArray_uint8_t* binaryStream, uint8_t reg, Label* label) {
+    uint64_t labelAddress = label->address;
+
+    // We begin by BXORing out the register to get a clean 0 starting point to fill in the address
+    insertArray_uint8_t(binaryStream, BXOR_REG_OPCODE);
+    insertArray_uint8_t(binaryStream, reg);
+    insertArray_uint8_t(binaryStream, reg);
+    
+    // We now add the individual bytes of the address and shift them in place 
+    for(int i = 0; i<8; i++) {
+        insertArray_uint8_t(binaryStream, SHFT_OPCODE); //shift
+        insertArray_uint8_t(binaryStream, 0x08); // 8 bytes
+        insertArray_uint8_t(binaryStream, reg); // from register
+        insertArray_uint8_t(binaryStream, 0x00); // left
+        insertArray_uint8_t(binaryStream, BORR_IMM_OPCODE); // ORR add byte
+        uint8_t byteToAddFromAddress = ((labelAddress >> (i*8)) & byteMask); // From address
+        insertArray_uint8_t(binaryStream, reg); // to register
+        insertArray_uint8_t(binaryStream, 0x00); // required for fixed-width encoding
+    }
 }
 
 

@@ -93,6 +93,8 @@ void writeOperandsToBinaryStream(DynamicArray_uint8_t* binaryStream, Instruction
 
 #define INSTRUCTION_BYTE_WIDTH 4 // All instructions are 4 bytes wide
 
-void rewriteLabelJump(DynamicArray_uint8_t* binaryStream, uint8_t reeg, Label* label);
+void rewriteLabelJump(DynamicArray_uint8_t* binaryStream, uint8_t reg, Label* label);
+
+Label* findLabelIfExistsForJump(Instruction* instruction, DynamicArray_LabelPtr* labels);
 
 #endif
