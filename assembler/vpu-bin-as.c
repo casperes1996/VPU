@@ -215,9 +215,9 @@ DynamicArray_uint8_t* createBinaryInstructionStream(DynamicArray_InstructionPtr*
         }
         else if(strcasecmp(opName, "MOVE") == 0) { // Move instructions - figure out if constant or register type
             if(instructions->array[i]->operand1[0] == '$') { // A constant value moved to a register
-                insertArray_uint8_t(binaryInstructionStream, 0x01); // Set the opcode to MOVE with Constant
+                insertArray_uint8_t(binaryInstructionStream, MOVE_IMM_OPCDE); // Set the opcode to MOVE with Constant
             } else { // Register to Register
-                insertArray_uint8_t(binaryInstructionStream, 0x00); // Set the opcode to MOVE with Register
+                insertArray_uint8_t(binaryInstructionStream, MOVE_REG_OPCDE); // Set the opcode to MOVE with Register
             }
         }
         else if(strcasecmp(opName, "JUMP") == 0) {
@@ -226,27 +226,27 @@ DynamicArray_uint8_t* createBinaryInstructionStream(DynamicArray_InstructionPtr*
         }
         else if(strcasecmp(opName, "PLUS") == 0) { // Add instructions - figure out if constant or register type
             if(instructions->array[i]->operand1[0] == '$') { // A constant value added to a register
-                insertArray_uint8_t(binaryInstructionStream, 0x08); // Set the opcode to PLUS with Constant
+                insertArray_uint8_t(binaryInstructionStream, PLUS_IMM_OPCODE); // Set the opcode to PLUS with Constant
             } else {
-                insertArray_uint8_t(binaryInstructionStream, 0x07);
+                insertArray_uint8_t(binaryInstructionStream, PLUS_REG_OPCODE);
             }
         }
         else if(strcasecmp(opName, "SUBT") == 0) { // Subtract instructions - figure out if constant or register type
             if(instructions->array[i]->operand1[0] == '$') { // A constant value subtracted from a register
-                insertArray_uint8_t(binaryInstructionStream, 0x0e);
+                insertArray_uint8_t(binaryInstructionStream, SUBT_IMM_OPCODE);
             } else {
-                insertArray_uint8_t(binaryInstructionStream, 0x0d);
+                insertArray_uint8_t(binaryInstructionStream, SUBT_REG_OPCODE);
             }
         }
         else if(strcasecmp(opName, "MULT") == 0) { // Multiply instructions - figure out if constant or register type
             if(instructions->array[i]->operand1[0] == '$') { // A constant value multiplied by a register
-                insertArray_uint8_t(binaryInstructionStream, 0x0a); // Set the opcode to MULT with Constant
+                insertArray_uint8_t(binaryInstructionStream, MULT_IMM_OPCODE); // Set the opcode to MULT with Constant
             } else {
-                insertArray_uint8_t(binaryInstructionStream, 0x09);
+                insertArray_uint8_t(binaryInstructionStream, MULT_REG_OPCODE);
             }
         }
         else if(strcasecmp(opName, "NOOP") == 0) {
-            insertArray_uint8_t(binaryInstructionStream, 0xff);
+            insertArray_uint8_t(binaryInstructionStream, NOOP_OPCODE);
         } 
         else {
             fprintf(stderr, "Encountered unrecognised instructions: %s\n", opName);
@@ -258,6 +258,11 @@ DynamicArray_uint8_t* createBinaryInstructionStream(DynamicArray_InstructionPtr*
     } // end of for loop
 
     return binaryInstructionStream;
+}
+
+
+void rewriteLabelJump(DynamicArray_uint8_t* binaryStream, uint8_t reg, Label* label) {
+
 }
 
 

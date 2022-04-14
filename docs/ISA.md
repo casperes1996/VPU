@@ -59,6 +59,8 @@ The JUMP instruction can be a bit heavy to write out with pure addressing.
 To allow easier assembly labels are allowed in the form
 JUMP $c (r) LABEL. This is similar to the encoded JUMP but instead of jumping to the register specified as ARG2, it jumps to the label specified by ARG3,
 using the register in ARG2 for the address - In other words you are choosing a register to give up for the assembler to create the JUMP.
+Be aware that this expands to a lot more than 1 instructions, breaking the traditional 1:1 mapping of writing assembly.
+Compilers may often be advised to not use this and instead MOVE PC to a register and compute the offset followed by an actual JUMP encoding
 
 
 ## If new instructions are added, remember to update VALID_INSTRUCTIONS in vpu-bin-as.h, assembler code generation and emulator runtime
