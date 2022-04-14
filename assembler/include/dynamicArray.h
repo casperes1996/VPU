@@ -13,7 +13,7 @@
 #define defDynamicArray(type, name) \
 	typedef struct DynamicArray_##name##_st { \
 		type *array; \
-		size_t used; \
+		uint64_t used; \
 		size_t size; \
 	} DynamicArray_##name
 
@@ -45,14 +45,16 @@
 		a->size = 0; \
 	}
 
-defDynamicArray(Instruction*, InstructionPtr);
-defInitArray(Instruction*, InstructionPtr);
-defInsertArray(Instruction*, InstructionPtr);
-defFreeArray(Instruction*, InstructionPtr);
+#define defineDynamicArray(type, name) \
+	defDynamicArray(type, name); \
+	defInitArray(type, name); \
+	defInsertArray(type, name); \
+	defFreeArray(type, name)
 
-defDynamicArray(Label*, LabelPtr);
-defInitArray(Label*, LabelPtr);
-defInsertArray(Label*, LabelPtr);
-defFreeArray(Label*, LabelPtr);
+defineDynamicArray(Instruction*, InstructionPtr);
+
+defineDynamicArray(Label*, LabelPtr);
+
+defineDynamicArray(uint8_t, uint8_t);
 
 #endif // DYNAMIC_ARRAY_H

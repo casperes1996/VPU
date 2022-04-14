@@ -60,11 +60,11 @@ uint8_t getValidRegisterNumber(char* token) {
 
 void printInstructions(DynamicArray_InstructionPtr* instructions);
 
-uint8_t* createBinaryInstructionStream(DynamicArray_InstructionPtr* instructions, uint64_t* bytesWritten);
+DynamicArray_uint8_t* createBinaryInstructionStream(DynamicArray_InstructionPtr* instructions);
 
-void writeBinaryStreamToFile(uint8_t* binaryStream, uint64_t bytesWritten, char* fileName);
+void writeBinaryStreamToFile(uint8_t* binaryStream,uint64_t numberOfBytes, char* fileName);
 
-void writeOperandsToBinaryStream(uint8_t* binaryStream,uint64_t* offset, Instruction* instruction);
+void writeOperandsToBinaryStream(DynamicArray_uint8_t* binaryStream, Instruction* instruction);
 
 #define INSTRUCTION_BYTE_WIDTH 4 // All instructions are 4 bytes wide
 

@@ -53,4 +53,12 @@ BORR    $c      (r)     N/A         15 c  r  00                 Bitwise OR of a 
 BNOT    (r)     N/A     N/A         16 r  r  00                 Negate the value in ARG1 (all bits negated) and store the result in ARG1
 NOOP    N/A     N/A     N/A         ff 00 00 00                 The no-op. Moves PC to the next instruction doing nothing else
 
+
+----- THE JUMP SHORTHAND -----
+The JUMP instruction can be a bit heavy to write out with pure addressing.
+To allow easier assembly labels are allowed in the form
+JUMP $c (r) LABEL. This is similar to the encoded JUMP but instead of jumping to the register specified as ARG2, it jumps to the label specified by ARG3,
+using the register in ARG2 for the address - In other words you are choosing a register to give up for the assembler to create the JUMP.
+
+
 ## If new instructions are added, remember to update VALID_INSTRUCTIONS in vpu-bin-as.h, assembler code generation and emulator runtime

@@ -17,6 +17,9 @@ static bool debug = false;
 #define debugerr(fmt, ...) \
     if (debug) fprintf(stderr, fmt, ##__VA_ARGS__);
 
+// Note currently no memory is freed anywhere. we expect the program to only take very little memory and run for such a short amount of time
+// it all quickly gets freed again anyway. This is not considered a problem for now, we are just hacking it together to work for now.
+
 
 int main(int argc, char** argv) {
     if (argc < 2) {
@@ -30,18 +33,17 @@ int main(int argc, char** argv) {
     FileData fileData = readInFile(argv[1]);
 
     DynamicArray_InstructionPtr* tokens = tokeniseInstructions(fileData);
+    free(fileData.data);
     debug("Pre-normalisation tokens:\n");
     printInstructions(tokens); // debug only
     normaliseInstructionList(tokens);
     printInstructions(tokens); // debug only
-    uint64_t bytesWritten = 0;
-    uint8_t* binaryInstructionStream = createBinaryInstructionStream(tokens, &bytesWritten);
+    DynamicArray_uint8_t* binaryInstructionStream = createBinaryInstructionStream(tokens);
     // argv[1] file with .bin extension
     char* fileName = malloc(strlen(argv[1]) + 5);
     strcpy(fileName, argv[1]);
     strcat(fileName, ".bin");
-    writeBinaryStreamToFile(binaryInstructionStream, bytesWritten, fileName);
-    free(fileData.data);
+    writeBinaryStreamToFile(binaryInstructionStream->array, binaryInstructionStream->used, fileName);
     return 0;
 }
 
@@ -161,46 +163,40 @@ bool isValidInstruction(Instruction* instruction) {
 }
 
 
-void writeOperandsToBinaryStream(uint8_t* binaryStream,uint64_t* offsetRet, Instruction* instruction) {
-    uint64_t offset = *offsetRet;
+void writeOperandsToBinaryStream(DynamicArray_uint8_t* binaryStream, Instruction* instruction) {
     if(instruction->operand1 != NULL) {
         if(instruction->operand1[0] == '$') { // A constant value moved to a register
-            binaryStream[offset] = (uint8_t) strtol(instruction->operand1+1, NULL, 0); // Gets the value of the constant. With base 0 either base 10, hex or octal can work depending on input form
+            insertArray_uint8_t(binaryStream, (uint8_t) strtol(instruction->operand1+1, NULL, 0)); // Gets the value of the constant. With base 0 either base 10, hex or octal can work depending on input form
         } else { // A register argment
-            binaryStream[offset] = getValidRegisterNumber(instruction->operand1);
+            insertArray_uint8_t(binaryStream, getValidRegisterNumber(instruction->operand1));
         }
     } else { // NULL
-        binaryStream[offset] = 0x00;
+        insertArray_uint8_t(binaryStream,0x00);
     }
-    offset += 1;
     if(instruction->operand2 != NULL) {
         if(instruction->operand2[0] == '$') { // A constant value moved to a register
-            binaryStream[offset] = (uint8_t) strtol(instruction->operand2+1, NULL, 0); // Gets the value of the constant. With base 0 either base 10, hex or octal can work depending on input form
+            insertArray_uint8_t(binaryStream, (uint8_t) strtol(instruction->operand2+1, NULL, 0)); // Gets the value of the constant. With base 0 either base 10, hex or octal can work depending on input form
         } else { // A register argment
-            binaryStream[offset] = getValidRegisterNumber(instruction->operand2);
+            insertArray_uint8_t(binaryStream, getValidRegisterNumber(instruction->operand2));
         }
     } else { // NULL
-        binaryStream[offset] = 0x00;
+        insertArray_uint8_t(binaryStream, 0x00);
     }
-    offset += 1;
     if(instruction->operand3 != NULL) {
         if(instruction->operand3[0] == '$') { // A constant value moved to a register
-            binaryStream[offset] = (uint8_t) strtol(instruction->operand3+1, NULL, 0); // Gets the value of the constant. With base 0 either base 10, hex or octal can work depending on input form
+            insertArray_uint8_t(binaryStream, (uint8_t) strtol(instruction->operand3+1, NULL, 0)); // Gets the value of the constant. With base 0 either base 10, hex or octal can work depending on input form
         } else { // A register argment
-            binaryStream[offset] = getValidRegisterNumber(instruction->operand3);
+            insertArray_uint8_t(binaryStream, getValidRegisterNumber(instruction->operand3));
         }
     } else { // NULL
-        binaryStream[offset] = 0x00;
+        insertArray_uint8_t(binaryStream, 0x00);
     }
-    offset += 1;
-    *offsetRet = offset;
 }
 
 
 // bytesWritten will be = numberOfBytes in the returned array of bytes
-uint8_t* createBinaryInstructionStream(DynamicArray_InstructionPtr* instructions, uint64_t* bytesWritten) {
-    uint8_t* binaryInstructionStream = calloc(INSTRUCTION_BYTE_WIDTH*instructions->used, sizeof(uint8_t)); // Amount of instructions times the width of each instruction in bytes
-    uint64_t numberOfBytes = 0;
+DynamicArray_uint8_t* createBinaryInstructionStream(DynamicArray_InstructionPtr* instructions) {
+    DynamicArray_uint8_t* binaryInstructionStream = initArray_uint8_t(INSTRUCTION_BYTE_WIDTH*instructions->used); // Initial size; Amount of instructions without JUMP reconstructions
     DynamicArray_LabelPtr* labels = initArray_LabelPtr(8); // Start with just enough space for 8 labels - We will use the labels list to not have to go through all instructions again when resolving a JUMP
     for(size_t i = 0; i < instructions->used; i++) { // Instruction parsing loop.
         char* opName = instructions->array[i]->opName; // The primary determining factor for encoding instruction.
@@ -213,53 +209,54 @@ uint8_t* createBinaryInstructionStream(DynamicArray_InstructionPtr* instructions
         else if(strcasecmp(opName, "LABL") == 0) { // Add to our list of labels for future lookups
             Label* label = calloc(1, sizeof(Label));
             label->name = strdup(instructions->array[i]->operand1);
-            label->address = numberOfBytes; // offset from the start of the program
+            label->address = binaryInstructionStream->used; // offset from the start of the program
             insertArray_LabelPtr(labels, label);
             continue;
         }
         else if(strcasecmp(opName, "MOVE") == 0) { // Move instructions - figure out if constant or register type
             if(instructions->array[i]->operand1[0] == '$') { // A constant value moved to a register
-                binaryInstructionStream[numberOfBytes] = 0x01; // Set the opcode to MOVE with Constant
+                insertArray_uint8_t(binaryInstructionStream, 0x01); // Set the opcode to MOVE with Constant
             } else { // Register to Register
-                binaryInstructionStream[numberOfBytes] = 0x00; // Set the opcode to MOVE with Register
+                insertArray_uint8_t(binaryInstructionStream, 0x00); // Set the opcode to MOVE with Register
             }
+        }
+        else if(strcasecmp(opName, "JUMP") == 0) {
+            // MARK:- JUMP is a noteworthy exception to normal flow when using a label, Thus using continue.
+            // TODO:- Encode all instructions required to move the label address to the specified register and perform the jump
         }
         else if(strcasecmp(opName, "PLUS") == 0) { // Add instructions - figure out if constant or register type
             if(instructions->array[i]->operand1[0] == '$') { // A constant value added to a register
-                binaryInstructionStream[numberOfBytes] = 0x08; // Set the opcode to PLUS with Constant
+                insertArray_uint8_t(binaryInstructionStream, 0x08); // Set the opcode to PLUS with Constant
             } else {
-                binaryInstructionStream[numberOfBytes] = 0x07;
+                insertArray_uint8_t(binaryInstructionStream, 0x07);
             }
         }
         else if(strcasecmp(opName, "SUBT") == 0) { // Subtract instructions - figure out if constant or register type
             if(instructions->array[i]->operand1[0] == '$') { // A constant value subtracted from a register
-                binaryInstructionStream[numberOfBytes] = 0x0e;
+                insertArray_uint8_t(binaryInstructionStream, 0x0e);
             } else {
-                binaryInstructionStream[numberOfBytes] = 0x0d;
+                insertArray_uint8_t(binaryInstructionStream, 0x0d);
             }
         }
         else if(strcasecmp(opName, "MULT") == 0) { // Multiply instructions - figure out if constant or register type
             if(instructions->array[i]->operand1[0] == '$') { // A constant value multiplied by a register
-                binaryInstructionStream[numberOfBytes] = 0x0a; // Set the opcode to MULT with Constant
+                insertArray_uint8_t(binaryInstructionStream, 0x0a); // Set the opcode to MULT with Constant
             } else {
-                binaryInstructionStream[numberOfBytes] = 0x09;
+                insertArray_uint8_t(binaryInstructionStream, 0x09);
             }
         }
         else if(strcasecmp(opName, "NOOP") == 0) {
-            binaryInstructionStream[numberOfBytes] = 0xff;
+            insertArray_uint8_t(binaryInstructionStream, 0xff);
         } 
         else {
             fprintf(stderr, "Encountered unrecognised instructions: %s\n", opName);
             exit(-1);
         } // Done finding opCode
 
-        numberOfBytes += 1;
-
         // MARK: - From here we only set operands. Same code can be used for all instructions.
-        writeOperandsToBinaryStream(binaryInstructionStream, &numberOfBytes, instructions->array[i]);
+        writeOperandsToBinaryStream(binaryInstructionStream, instructions->array[i]);
     } // end of for loop
 
-    *bytesWritten = numberOfBytes;
     return binaryInstructionStream;
 }
 
