@@ -294,7 +294,7 @@ void rewriteLabelJump(DynamicArray_uint8_t* binaryStream, uint8_t reg, Label* la
     // We begin by BXORing out the register to get a clean 0 starting point to fill in the address
     insertArray_uint8_t(binaryStream, BXOR_REG_OPCODE);
     insertArray_uint8_t(binaryStream, reg);
-    insertArray_uint8_t(binaryStream, reg);
+    insertArray_uint8_t(binaryStream, reg); 
     
     // We now add the individual bytes of the address and shift them in place 
     for(int i = 0; i<8; i++) {
