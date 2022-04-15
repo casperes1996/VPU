@@ -9,6 +9,9 @@ makedirs:
 assembler: makedirs ${OUTDIR}/assembler/vpu-bin-as.o
 	${CC} -o ${OUTDIR}/assembler/Target/vpu-bin-as ${OUTDIR}/assembler/vpu-bin-as.o
 
+emulator: makedirs ${OUTDIR}/emulator/emu.o ${OUTDIR}/emulator/mmu.o ${OUTDIR}/emulator/vpu.o ${OUTDIR}/emulator/alu.o
+	${CC} -o ${OUTDIR}/emulator/Target/emu ${OUTDIR}/emulator/emu.o
+
 ${OUTDIR}/assembler/%.o: assembler/%.c
 	$(CC) -c $(CFLAGS) -o $@ $^ -Ishared/ -Iassembler/include/
 
