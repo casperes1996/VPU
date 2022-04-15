@@ -2,7 +2,6 @@ Still needing to be done:
 
 • Make a comprehensive test suite of valid and invalid assembly programs
 • Make a corresponding set of expected outputs for the programs (when run by the emulator to come)
-• Add remaining instructions to assembler
 • Build the emulator (all missing. Subdivide tasks when starting)
 • Make a program that automatically runs assembles all the files in valid and invalid folders and reports if the correct ones succeeded and failed.
 • Add extra features like a stack after v1.0 is implemented both in assembler and emulator. Introduce skeleton support in v1.0 only.
