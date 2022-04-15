@@ -205,7 +205,7 @@ DynamicArray_uint8_t* createBinaryInstructionStream(DynamicArray_InstructionPtr*
 
         if(strcasecmp(opName, "ACMD") == 0) {
             // Assembler command. Not used in v1.0
-            fprintf(stderr, "Error: Assembler command encountered. This is not supported in v1.0\n");
+            fprintf(stderr, "Warning: Assembler directives encountered. This is not supported in v1.0\n");
             continue;
         } 
         else if(strcasecmp(opName, "LABL") == 0) { // Add to our list of labels for future lookups
