@@ -365,6 +365,7 @@ void rewriteLabelJump(DynamicArray_uint8_t* binaryStream, uint8_t reg, Label* la
         insertArray_uint8_t(binaryStream, 0x00); // left
         insertArray_uint8_t(binaryStream, BORR_IMM_OPCODE); // ORR add byte
         uint8_t byteToAddFromAddress = ((labelAddress >> (i*8)) & byteMask); // From address
+        insertArray_uint8_t(binaryStream, byteToAddFromAddress);
         insertArray_uint8_t(binaryStream, reg); // to register
         insertArray_uint8_t(binaryStream, 0x00); // required for fixed-width encoding
     }
