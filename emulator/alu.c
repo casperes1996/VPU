@@ -21,7 +21,8 @@ void alu_jump(uint8_t operand1, uint8_t operand2, uint8_t operand3) {
     Register* reg = findRegister(operand2);
     bool shouldJump = conditional == 0 ? true : (vpu->FLAGS & FLAG_COMPARE); // JUMP if condition is 0 or 1 && FLAG_COMPARE is set.
     if(shouldJump) {
-        vpu->PC = *reg;
+        vpu->PC = *reg; // Normally this would be enough, but when returning from thi, PC gets incremented by 4, so:
+        vpu->PC -= 4; // PC = PC - 4
     }
 }
 

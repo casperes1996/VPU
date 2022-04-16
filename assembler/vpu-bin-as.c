@@ -210,10 +210,10 @@ DynamicArray_uint8_t* createBinaryInstructionStream(DynamicArray_InstructionPtr*
         } 
         else if(strcasecmp(opName, "LABL") == 0) { // Add to our list of labels for future lookups
             // Let's see if the label already exists
-            int i = 0;
+            int j = 0;
             bool found = false;
-            for(; i < labels->used; i++) {
-                if(strcasecmp(labels->array[i]->name, instructions->array[i]->operand1) == 0) {
+            for(; j < labels->used; j++) {
+                if(strcasecmp(labels->array[j]->name, instructions->array[i]->operand1) == 0) {
                     found = true;
                     break;
                 }
@@ -235,13 +235,15 @@ DynamicArray_uint8_t* createBinaryInstructionStream(DynamicArray_InstructionPtr*
             }
         }
         else if(strcasecmp(opName, "JUMP") == 0) {
-            Label* potentialLabel = findLabelIfExistsForJump(instructions->array[i], labels);
-            
-            if(potentialLabel != NULL) {
-                // This wil insert instructions such that the label address is placed in the second operand register. After this the form should be a normal JUMP.
-                rewriteLabelJump(binaryInstructionStream, getValidRegisterNumber(instructions->array[i]->operand2), potentialLabel);
-                instructions->array[i]->operand3 = NULL; // We don't need to store the label name in the instruction anymore
+            if(instructions->array[i]->operand3 != NULL) {
+                Label* potentialLabel = findLabelIfExistsForJump(instructions->array[i], labels);
+                if(potentialLabel != NULL) {
+                    // This wil insert instructions such that the label address is placed in the second operand register. After this the form should be a normal JUMP.
+                    rewriteLabelJump(binaryInstructionStream, getValidRegisterNumber(instructions->array[i]->operand2), potentialLabel);
+                    instructions->array[i]->operand3 = NULL; // We don't need to store the label name in the instruction anymore
+                }
             }
+            
             insertArray_uint8_t(binaryInstructionStream, JUMP_OPCODE);
         }
         else if(strcasecmp(opName, "COMP") == 0) {
@@ -356,6 +358,7 @@ void rewriteLabelJump(DynamicArray_uint8_t* binaryStream, uint8_t reg, Label* la
     insertArray_uint8_t(binaryStream, BXOR_REG_OPCODE);
     insertArray_uint8_t(binaryStream, reg);
     insertArray_uint8_t(binaryStream, reg);
+    insertArray_uint8_t(binaryStream, 0x00); // the padding byte
     
     // We now add the individual bytes of the address and shift them in place 
     for(int i = 0; i<8; i++) {
@@ -364,7 +367,7 @@ void rewriteLabelJump(DynamicArray_uint8_t* binaryStream, uint8_t reg, Label* la
         insertArray_uint8_t(binaryStream, reg); // from register
         insertArray_uint8_t(binaryStream, 0x00); // left
         insertArray_uint8_t(binaryStream, BORR_IMM_OPCODE); // ORR add byte
-        uint8_t byteToAddFromAddress = ((labelAddress >> (i*8)) & byteMask); // From address
+        uint8_t byteToAddFromAddress = ((labelAddress >> (56-(i*8))) & byteMask); // From address
         insertArray_uint8_t(binaryStream, byteToAddFromAddress);
         insertArray_uint8_t(binaryStream, reg); // to register
         insertArray_uint8_t(binaryStream, 0x00); // required for fixed-width encoding
