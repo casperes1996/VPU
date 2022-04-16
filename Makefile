@@ -2,6 +2,8 @@ OUTDIR:=./out
 CC:=clang
 CFLAGS=-g -Wall
 
+all: makedirs assembler emulator
+
 makedirs:
 	@mkdir -p ${OUTDIR}/assembler/Target
 	@mkdir -p ${OUTDIR}/emulator/Target
@@ -14,13 +16,13 @@ emulator: ${OUTDIR}/emulator/vpu.o ${OUTDIR}/emulator/emu.o ${OUTDIR}/emulator/m
 	${CC} -o ${OUTDIR}/emulator/Target/emu $^
 
 ${OUTDIR}/assembler/%.o: assembler/%.c makedirs
-	$(CC) -c $(CFLAGS) -o $@ $< -Ishared/ -Iassembler/include/
+	@$(CC) -c $(CFLAGS) -o $@ $< -Ishared/ -Iassembler/include/
 
 ${OUTDIR}/shared/%.o: shared/%.c makedirs
-	$(CC) -c $(CFLAGS) -o $@ $< -Ishared/
+	@$(CC) -c $(CFLAGS) -o $@ $< -Ishared/
 
 ${OUTDIR}/emulator/%.o: emulator/%.c makedirs
-	$(CC) -c $(CFLAGS) -o $@ $< -Ishared/ -Iemulator/include/
+	@$(CC) -c $(CFLAGS) -o $@ $< -Ishared/ -Iemulator/include/
 
 clean: 
 	@rm -rf ${OUTDIR}/assembler
