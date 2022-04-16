@@ -5,18 +5,22 @@ CFLAGS=-g -Wall
 makedirs:
 	@mkdir -p ${OUTDIR}/assembler/Target
 	@mkdir -p ${OUTDIR}/emulator/Target
+	@mkdir -p ${OUTDIR}/shared/
 
-assembler: makedirs ${OUTDIR}/assembler/vpu-bin-as.o
-	${CC} -o ${OUTDIR}/assembler/Target/vpu-bin-as ${OUTDIR}/assembler/vpu-bin-as.o
+assembler: ${OUTDIR}/assembler/vpu-bin-as.o ${OUTDIR}/shared/dynamicArray.o
+	${CC} -o ${OUTDIR}/assembler/Target/vpu-bin-as $^
 
-emulator: makedirs ${OUTDIR}/emulator/emu.o ${OUTDIR}/emulator/mmu.o ${OUTDIR}/emulator/vpu.o ${OUTDIR}/emulator/alu.o
-	${CC} -o ${OUTDIR}/emulator/Target/emu ${OUTDIR}/emulator/emu.o
+emulator: ${OUTDIR}/emulator/vpu.o ${OUTDIR}/emulator/emu.o ${OUTDIR}/emulator/mmu.o  ${OUTDIR}/emulator/alu.o ${OUTDIR}/shared/dynamicArray.o
+	${CC} -o ${OUTDIR}/emulator/Target/emu $^
 
-${OUTDIR}/assembler/%.o: assembler/%.c
-	$(CC) -c $(CFLAGS) -o $@ $^ -Ishared/ -Iassembler/include/
+${OUTDIR}/assembler/%.o: assembler/%.c makedirs
+	$(CC) -c $(CFLAGS) -o $@ $< -Ishared/ -Iassembler/include/
 
-${OUTDIR}/emulator/%.o: emulator/%.c
-	$(CC) -c $(CFLAGS) -o $@ $^ -Ishared/ -Iemulator/include/
+${OUTDIR}/shared/%.o: shared/%.c makedirs
+	$(CC) -c $(CFLAGS) -o $@ $< -Ishared/
+
+${OUTDIR}/emulator/%.o: emulator/%.c makedirs
+	$(CC) -c $(CFLAGS) -o $@ $< -Ishared/ -Iemulator/include/
 
 clean: 
 	@rm -rf ${OUTDIR}/assembler

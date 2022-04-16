@@ -6,11 +6,10 @@
 #include <string.h>
 #include <stdint.h>
 #include <sys/types.h>
-#include "assembler-structs.h"
 
 // Macro based generic Dynamic Array
 
-#define defDynamicArray(type, name) \
+#define decDynamicArray(type, name) \
 	typedef struct DynamicArray_##name##_st { \
 		type *array; \
 		uint64_t used; \
@@ -46,15 +45,16 @@
 	}
 
 #define defineDynamicArray(type, name) \
-	defDynamicArray(type, name); \
 	defInitArray(type, name); \
 	defInsertArray(type, name); \
 	defFreeArray(type, name)
 
-defineDynamicArray(Instruction*, InstructionPtr);
+#define declareDynamicArray(type, name) \
+	decDynamicArray(type, name); \
+	DynamicArray_##name* initArray_##name(size_t initialSize); \
+	void insertArray_##name(DynamicArray_##name* a, type value); \
+	void freeArray_##name(DynamicArray_##name* a)
 
-defineDynamicArray(Label*, LabelPtr);
-
-defineDynamicArray(uint8_t, uint8_t);
+declareDynamicArray(uint8_t, uint8_t);
 
 #endif // DYNAMIC_ARRAY_H
