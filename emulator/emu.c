@@ -36,13 +36,14 @@ int main(int argc, char** argv) {
 }
 
 void runEmulator(DynamicArray_uint8_t* binaryImage) {
+    loadBinToVPUStartingMemory(binaryImage);
     if(endAtImageOvershoot) {
-        while(vpu->PC <= binaryImage->used-4) {
-            decodeAndDispatchInstruction(binaryImage->array);
+        while(vpu->PC <= binaryImage->used-INSTRUCTION_WIDTH) {
+            decodeAndDispatchInstruction();
         }
     } else {
         while(true) {
-            decodeAndDispatchInstruction(binaryImage->array);
+            decodeAndDispatchInstruction();
         }
     }
 }
@@ -100,6 +101,12 @@ DynamicArray_uint8_t* readInBinFile(char* fileName) {
     fileContents->used = fileSize; // We overwrite the used property since we inserted into the array in a direct way, circumventing the normal insert method
     fclose(file);
     return fileContents;
+}
+
+void loadBinToVPUStartingMemory(DynamicArray_uint8_t* bin) {
+    for(uint64_t i = 0; i < bin->used; i++) {
+        mmu->memory[i] = bin->array[i];
+    }
 }
 
 void exitPrint() {

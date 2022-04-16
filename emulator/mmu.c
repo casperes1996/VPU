@@ -15,3 +15,15 @@ void initMMU(uint64_t memsize) {
     mmu->memory = calloc(memsize,sizeof(uint8_t));
     mmu->memsize = memsize;
 }
+
+uint64_t readMemory(Register address) {
+    uint64_t value = 0;
+    if(address < mmu->memsize) {
+        uint8_t* addressToLoadFrom = mmu->memory+address;
+        value = *((uint64_t*)(addressToLoadFrom));
+    } else {
+        fprintf(stderr, "TRYING TO READ MEMORY NOT IN MMU MAPPINGS %llx\n", address);
+        exit(0);
+    }
+    return value;
+}

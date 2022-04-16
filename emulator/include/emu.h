@@ -18,6 +18,8 @@ void runEmulator(DynamicArray_uint8_t* binary);
 // The two following functions are used to print state at exit, whether forceful or intended
 void exitPrint();
 
+void loadBinToVPUStartingMemory(DynamicArray_uint8_t* bin);
+
 void signalHandler(int signal);
 
 #endif //EMULATOR_EMU_H
