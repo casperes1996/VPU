@@ -2,8 +2,11 @@
 #ifndef EMULATOR_VPU_H
 #define EMULATOR_VPU_H
 #include <stdint.h>
+
 typedef uint64_t Register;
 #define INSTRUCTION_WIDTH 4
+#define FLAG_COMPARE 0x01
+
 #include "mmu.h"
 #include "alu.h"
 #include "dynamicArray.h"

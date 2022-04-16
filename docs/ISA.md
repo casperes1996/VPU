@@ -22,7 +22,7 @@ PC, SP, BP, FLAGS - All 64-bit wide.
 FLAGS meaning:
 -------------------------------------------------------------------------------------------------------------
 BIT NUMBER      NAME                                            DESCRIPTION
-[0]             COMPARAE                                        Set to 1 as a result of some COMP instructions and can be used for conditional behaviour in JUMPs.
+[0]             COMPARE                                         Set to 1 as a result of some COMP instructions and can be used for conditional behaviour in JUMPs.
 [1;63]          RESERVED                                        Currently reserved and meaningless, will potentially add semantics later. 
 
 ### Table of instructions

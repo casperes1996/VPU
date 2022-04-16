@@ -27,3 +27,13 @@ uint64_t readMemory(Register address) {
     }
     return value;
 }
+
+void writeMemory(Register address, Register value) {
+    if(address < mmu->memsize) {
+        uint8_t* addressToLoadFrom = mmu->memory+address;
+        *((uint64_t*)(addressToLoadFrom)) = value;
+    } else {
+        fprintf(stderr, "TRYING TO WRITE MEMORY NOT IN MMU MAPPINGS %llx\n", address);
+        exit(0);
+    }
+}
