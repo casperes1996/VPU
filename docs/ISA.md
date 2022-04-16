@@ -39,10 +39,10 @@ PLUS    (r)     (r)     N/A         07 r  r  00                 Add the valuee i
 PLUS    $c      (r)     N/A         08 c  r  00                 Same as above but with a constant for ARG1
 MULT    (r)     (r)     N/A         09 r  r  00                 Multiply ARG1 with ARG2 and save the result in ARG2
 MULT    $c      (r)     N/A         0a c  r  00                 Multiply constant in ARG1 with ARG2 and save result in ARG2
-DIVI    (r)     (r)     N/A         0b r  r  00                 Divide ARG1 with ARG2 result saved in ARG2
-DIVI    $c      (r)     N/A         0c c  r  00                 Divide constant in ARG1 with ARG2 and save result in ARG2. Can be extended to use ARG3 to specify reverse order division, so it would be ARG2/ARG1 if necessary for efficiency
-SUBT    (r)     (r)     N/A         0d r  r  00                 Subtract ARG2 from ARG1 and save result in ARG2
-SUBT    $c      (r)     N/A         0e c  r  00                 Subtract ARG2 from ARG1 and save result in ARG2. Semantics ARG2=ARG1-ARG2. See divi for potential extension
+DIVI    (r)     (r)     N/A         0b r  r  00                 Divide ARG2 with ARG1 result saved in ARG2
+DIVI    $c      (r)     N/A         0c c  r  00                 Divide ARG2 with ARG1 and save result in ARG2. Can be extended to use ARG3 to specify reverse order division, so it would be ARG2/ARG1 if necessary for efficiency
+SUBT    (r)     (r)     N/A         0d r  r  00                 Subtract ARG1 from ARG2 and save result in ARG2
+SUBT    $c      (r)     N/A         0e c  r  00                 Subtract ARG1 from ARG2 and save result in ARG2. Semantics ARG2=ARG1-ARG2. See divi for potential extension
 SHFT    $c      (r)     $c          0f c  r  c                  Shift ARG2 ARG1 bits. If ARG3 = 0 the shift is leftwards. If ARG3 != 0 the shift is rightward.
 BAND    (r)     (r)     N/A         10 r  r  00                 Bitwise AND of two registers, result saved in ARG2
 BAND    $c      (r)     N/A         11 r  r  00                 Bitwise AND of a constant and a register, result saved in ARG2

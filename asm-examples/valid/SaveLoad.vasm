@@ -1,0 +1,10 @@
+.section TEXT
+main:
+MOVE $32 r0
+DIVI $8  r0
+PLUS $4  r0
+MOVE PC  r15 # Make r15 the address we store and load from
+MULT $64 r15 # Move far enough into memory to not overwrite executable
+SAVE r15 r0 # Should save 8
+MOVE $99 r0 # Just to do something
+LOAD r15 r1 # Should result in r1 = 8

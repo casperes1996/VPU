@@ -1,0 +1,15 @@
+.section TEXT
+main:
+MOVE $255 r0 # Finding the sqrt of 65,025 - constants can max be 8 bits long so written ad 255*255
+MULT r0 r0  # 1024
+MOVE $0  r1 # Our testing variable
+loop:
+MOVE $1 r15
+BNOT r15 # All 1 except unit-bit
+BAND r15  FLAGS # reset COMPARE flag
+PLUS $1  r1
+MOVE r1  r2
+MULT r1  r2
+COMP r0  r2 $1
+COMP r0  r2 $2
+JUMP $1  r15 loop
