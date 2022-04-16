@@ -18,16 +18,20 @@ void initVPU(uint64_t memsize, uint8_t set_verbosity) {
 
 void printState(uint8_t verbosityReq) {
     if(verbosityReq <= verbosity) {
-        printf("\n\n");
+        printf("\n");
         printf("PC:\t %llu\n", vpu->PC);
         printf("SP:\t %llu\n", vpu->SP);
         printf("BP:\t %llu\n", vpu->BP);
         printf("FLAGS:\t %llu\n", vpu->FLAGS);
-        printf("\n");
+        printf("----------------------\n");
         printf("General Purpose Registers:\n");
         for(int i = 0; i < 16; i++) {
             printf("r%d:\t %llu\n", i, vpu->generalPurposeRegisters[i]);
         }
-        printf("\n\n");
+        printf("\n");
     }
+}
+
+void decodeAndDispatchInstruction(uint8_t instructions[]) {
+    vpu->PC+=4;
 }

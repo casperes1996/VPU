@@ -9,10 +9,15 @@ DynamicArray_uint8_t* readInBinFile(char* filename);
 
 int main(int argc, char** argv);
 
-void parseArgs(int argc, char** argv, uint8_t* toSetVerbosity, uint64_t* toSetMemsize);
+void parseArgs(int argc, char** argv, uint8_t* toSetVerbosity, uint64_t* toSetMemsize, bool* endAtImageOvershoot);
 
 void printUsage();
 
 void runEmulator(DynamicArray_uint8_t* binary);
+
+// The two following functions are used to print state at exit, whether forceful or intended
+void exitPrint();
+
+void signalHandler(int signal);
 
 #endif //EMULATOR_EMU_H
