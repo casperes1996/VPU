@@ -1,0 +1,4 @@
+[submodule "MTLFramebuffer"]
+	path = emulator/MTLFramebuffer
+	url = git@github.com:casperes1996/MTLFramebuffer.git
+	branch = VPUFramebuffer
